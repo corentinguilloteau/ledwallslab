@@ -53,6 +53,8 @@ class ColorServer():
         # Create the top synchro receiver
         self.sync = UDPsync(self.sync_port, self.sync_queue, self)
 
+        self.shutdown = False
+
     # Server listening for LED data
     def start_server(self):
         logging.info("Lancement du ColorServer...")
@@ -68,16 +70,22 @@ class ColorServer():
         self.sync.join()
 
     def stop_server(self):
+        self.shutdown = not self.shutdown
         self.tcp_server._stop()
         self.translator._stop()
         self.spi_writer._stop()
         self.sync._stop()
 
     def restart_server(self):
+        self.shutdown = not self.shutdown
         self.stop_server()
 
     @staticmethod
     def reboot():
         os.system('sudo shutdown -r now')
+
+    @staticmethod
+    def poweroff():
+        os.system('sudo shutdown -h now')
 
 

@@ -45,4 +45,6 @@ class UDPsync(Thread):
                 self.server.reboot()
             elif frame_to_show == 108 and last == 108:  # 108 = 'l' --> return live
                 self.is_live = True
+            elif frame_to_show == 112 and last == 112:  # 112 = 'p' --> shutdown the slab
+                self.server.stop_server()
             last = frame_to_show
