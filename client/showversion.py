@@ -8,9 +8,6 @@ Created on Thu Jun 16 17:22:21 2016
 
 import socket
 
-HOST, PORT = "137.194.67.238", 9999
-#HOST, PORT = "localhost", 9999
-
-# Create a socket (SOCK_STREAM means a TCP socket)
+# Create a UDP Socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
-sock.sendto("vv", ("192.168.1.255", 9999))
+sock.sendto("vv".encode(), ("192.168.1.255", 8888))
