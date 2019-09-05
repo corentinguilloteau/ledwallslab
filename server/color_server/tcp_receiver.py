@@ -86,6 +86,6 @@ class TCPserver(Thread):
         logging.info("Client TCP connecté")
         self.buffer = b''  # Buffer reset
 
-    def stop():
+    def stop(self):
         self.terminated = True
 
