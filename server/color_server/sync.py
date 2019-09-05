@@ -21,6 +21,7 @@ class UDPsync(Thread):
         self.sync_queue = sync_queue
         self.server = server
         self.is_live = True
+        self.terminated = False;
 
     # Server listening for sync top
     def run(self):
@@ -28,7 +29,7 @@ class UDPsync(Thread):
         # Start connection
         self.sock.bind(("", self.port))                                        # Listen on port from everywhere
         last = 0
-        while True:
+        while not self.terminated:
             frame_to_show, emitter = self.sock.recvfrom(1)
             frame_to_show = int.from_bytes(frame_to_show, byteorder='big')
             if 0 <= frame_to_show <= 25 and self.is_live:   # while frame_to_show comes from UDP transmission, errors are possible
@@ -48,3 +49,6 @@ class UDPsync(Thread):
             elif frame_to_show == 112 and last == 112:  # 112 = 'p' --> shutdown the slab
                 self.server.stop_server()
             last = frame_to_show
+
+        def stop():
+            self.terminated= True;

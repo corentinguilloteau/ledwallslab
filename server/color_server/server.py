@@ -71,10 +71,10 @@ class ColorServer():
 
     def stop_server(self):
         self.shutdown = not self.shutdown
-        self.tcp_server._stop()
-        self.translator._stop()
-        self.spi_writer._stop()
-        self.sync._stop()
+        self.tcp_server.stop()
+        self.translator.stop()
+        self.spi_writer.stop()
+        self.sync.stop()
 
     def restart_server(self):
         self.shutdown = not self.shutdown
