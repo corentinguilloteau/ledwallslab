@@ -30,6 +30,7 @@ class TCPserver(Thread):
         self.s = None
         self.f = None
         self.buffer = b'' # Buffer's type is bytes
+        terminated = False
 
     def run(self):
         """
@@ -43,7 +44,7 @@ class TCPserver(Thread):
 
         self.__connexion()
 
-        while True:
+        while not terminated:
             while len(self.buffer) < self.frame_length:
                 if self.s is None:
                     self.__connexion()
@@ -84,4 +85,7 @@ class TCPserver(Thread):
         self.s, self.f = self.sock.accept()
         logging.info("Client TCP connecté")
         self.buffer = b''  # Buffer reset
+
+    def stop():
+        terminate = true
 
