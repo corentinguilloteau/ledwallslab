@@ -82,10 +82,10 @@ class ColorServer():
 
     @staticmethod
     def reboot():
-        os.system('sudo shutdown -r now')
+        os.system('reboot')
 
     @staticmethod
     def poweroff():
-        os.system('sudo shutdown -h now')
+        os.system('echo "ledwall"|sudo -S shutdown now')
 
 
