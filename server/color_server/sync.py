@@ -17,6 +17,8 @@ class UDPsync(Thread):
 
         # Create socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP socket
+        self.sock.settimeout(3)
+
         self.port = port
         self.sync_queue = sync_queue
         self.server = server
@@ -30,7 +32,11 @@ class UDPsync(Thread):
         self.sock.bind(("", self.port))                                        # Listen on port from everywhere
         last = 0
         while not self.terminated:
-            frame_to_show, emitter = self.sock.recvfrom(1)
+            try:
+                frame_to_show, emitter = self.sock.recvfrom(1)
+            except socket.timeout:
+                continue
+            
             frame_to_show = int.from_bytes(frame_to_show, byteorder='big')
             if 0 <= frame_to_show <= 25 and self.is_live:   # while frame_to_show comes from UDP transmission, errors are possible
                 self.sync_queue.put(frame_to_show)
