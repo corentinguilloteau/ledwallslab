@@ -55,6 +55,8 @@ class UDPsync(Thread):
                 self.server.stop_server()
             elif frame_to_show == 114 and last == 114:  # 114 = 'r' --> reboot slab
                 logging.info("Reboot")
+                self.sync_queue.put(28)
+                self.is_live = False
                 self.server.shutdown = 2
                 self.server.stop_server()
             elif frame_to_show == 108 and last == 108:  # 108 = 'l' --> return live
@@ -62,6 +64,8 @@ class UDPsync(Thread):
                 self.is_live = True
             elif frame_to_show == 112 and last == 112:  # 112 = 'p' --> shutdown the slab
                 logging.info("Shutdown")
+                self.sync_queue.put(28)
+                self.is_live = False
                 self.server.shutdown = 1
                 self.server.stop_server()
             last = frame_to_show

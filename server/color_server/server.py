@@ -27,7 +27,7 @@ class ColorServer():
         self.gamma_matrix = Gamma.gamma_matrix(gamma_coefs)
 
         self.receive_queue = queue.Queue()  # Receive FIFO
-        self.emit_ring_buffer = [bytearray([0, 0, 0, 0])] * 28; # Emit ring buffer (26 regular frames + version frame + number frame)
+        self.emit_ring_buffer = [bytearray([0, 0, 0, 0])] * 29; # Emit ring buffer (26 regular frames + version frame + number frame + shutdown frame)
         self.sync_queue = queue.Queue()  # Top synchro FIFO
 
         # Fill the two text frames (slab number, version, sub version)
@@ -41,6 +41,7 @@ class ColorServer():
         self.text = Text(slab, version, sversion)
         self.emit_ring_buffer[26] = self.text.get_version_frame()
         self.emit_ring_buffer[27] = self.text.get_slab_number_frame()
+        self.emit_ring_buffer[28] = self.text.display_shutdown()
         self.sync_queue.put(27) # Show slab number on start
 
         self.shutdown = 0

@@ -44,4 +44,11 @@ class Text():
         d.text((4, 3), str(self.slab_number), fill=(0, 255, 0))
         return Text.__img_to_frame(img)
 
+    def display_shutdown(self):
+        img = Image.new('RGB', (20, 20))
+        d = ImageDraw.Draw(img)
+        d.text((4, 3), "<3", fill=(0, 0, 128))
+        return Text.__img_to_frame(img)
+
+
 
