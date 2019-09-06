@@ -6,30 +6,31 @@ Created on Thu Jun 16 17:04:13 2016
 @author: thibaud
 """
 
+import os
 import logging
 import socket
 from threading import Thread
 
 
 class UDPsync(Thread):
-    def __init__(self, port, sync_queue, server):
+    def __init__(self, port, sync_queue, server, sock):
         Thread.__init__(self)
 
         # Create socket
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP socket
-        self.sock.settimeout(3)
+        self.sock = sock
+        
 
         self.port = port
         self.sync_queue = sync_queue
         self.server = server
         self.is_live = True
-        self.terminated = False;
+        self.terminated = False
+        print("MY PID IS: {}".format(os.getpid()))
 
     # Server listening for sync top
     def run(self):
         logging.info("Lancement du Thread d'écoute de synchronisation...")
         # Start connection
-        self.sock.bind(("", self.port))                                        # Listen on port from everywhere
         last = 0
         while not self.terminated:
             try:
@@ -65,4 +66,4 @@ class UDPsync(Thread):
             last = frame_to_show
 
     def stop(self):
-        self.terminated= True;
+        self.terminated= True

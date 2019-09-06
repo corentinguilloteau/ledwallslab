@@ -15,6 +15,7 @@ from color_server.spi_writer import SPIwriter
 from color_server.sync import UDPsync
 from color_server.text import Text
 import queue
+import socket
 
 
 class ColorServer():
@@ -43,42 +44,77 @@ class ColorServer():
         self.emit_ring_buffer[27] = self.text.get_slab_number_frame()
         self.sync_queue.put(27) # Show slab number on start
 
-
-        # New TCP server
-        self.tcp_server = TCPserver(self.port, self.frame_length, self.receive_queue)
-        # New SPI writer
-        self.spi_writer = SPIwriter(SPIspeed, self.emit_ring_buffer, self.sync_queue)
-        # Create a translator (decode / encode)
-        self.translator = Decoder(self.gamma_matrix, self.receive_queue, self.emit_ring_buffer)
-        # Create the top synchro receiver
-        self.sync = UDPsync(self.sync_port, self.sync_queue, self)
-
         self.shutdown = False
+        self.sync = None
+        self.SPIspeed = SPIspeed
+
+        self.sync_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP socket
+        self.sync_sock.settimeout(3)
+        self.sync_sock.bind(("", self.sync_port))                                        # Listen on port from everywhere
+
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP socket
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # No port hold
+        logging.info("Lancement du Thread d'écoute TCP...")
+        self.sock.settimeout(3)
+        # Start connection
+        self.sock.bind(("", self.port))                                        # Listen on port 9999 from everywhere
+        self.sock.listen(1)                                                    # 1 client max
+        self.__connexion()
+
 
     # Server listening for LED data
     def start_server(self):
         logging.info("Lancement du ColorServer...")
+
+        # New TCP server
+        self.tcp_server = TCPserver(self.port, self.frame_length, self.receive_queue, self.sock, self.s, self.f)
+        # New SPI writer
+        self.spi_writer = SPIwriter(self.SPIspeed, self.emit_ring_buffer, self.sync_queue)
+        # Create a translator (decode / encode)
+        self.translator = Decoder(self.gamma_matrix, self.receive_queue, self.emit_ring_buffer)
+        # Create the top synchro receiver
+        self.sync = UDPsync(self.sync_port, self.sync_queue, self, self.sync_sock)
+
+        self.shutdown = False
+
         self.tcp_server.start()
         self.spi_writer.start()
         self.translator.start()
         self.sync.start()
 
     def join_server(self):
+        logging.info("Attente de la fin des threads")
         self.tcp_server.join()
         self.translator.join()
         self.spi_writer.join()
-        self.sync.join()
+        try:
+            self.sync.join()
+        except RuntimeError:  # Bloquant comme attend la fin de join_serveur pour être join
+            pass
 
     def stop_server(self):
-        self.shutdown = not self.shutdown
+        logging.info("Arrêt du serveur")
+        self.shutdown = True
         self.tcp_server.stop()
         self.translator.stop()
         self.spi_writer.stop()
         self.sync.stop()
 
     def restart_server(self):
-        self.shutdown = not self.shutdown
-        self.stop_server()
+        logging.info("Redémarrage du serveur")
+        os.system('/home/ledwall/ledwallslab/restart.sh')
+
+    def __connexion(self):
+        """
+        Function called to start listening
+        :return:
+        """
+        logging.info(str(self.sock))
+        logging.info("En attente de connexion TCP")
+        # Wait for connection
+        self.s, self.f = self.sock.accept()
+        logging.info("Client TCP connecté")
+        self.buffer = b''  # Buffer reset
 
     @staticmethod
     def reboot():

@@ -7,6 +7,7 @@ Created on Tue Jun 21 10:01:13 2016
 """
 
 import logging
+from queue import Empty
 from threading import Thread
 
 
@@ -35,7 +36,11 @@ class Decoder(Thread):
     def run(self):
         logging.info("Thread de conversion des données opérationnel")
         while not self.terminated:
-            recv_buffer = self.receive_queue.get()  # Blocking until new data is received on TCP socket
+            try:
+                recv_buffer = self.receive_queue.get(timeout=3)  # Blocking until new data is received on TCP socket
+            except Empty:
+                continue
+
             frame_number, recv_buffer = recv_buffer[0], recv_buffer[1:] # Extract frame number and the frame content
             emit_buffer = bytearray([0, 0, 0, 0])   # Create an empty bytearray we'll fill
 
