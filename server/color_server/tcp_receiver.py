@@ -24,12 +24,15 @@ class TCPserver(Thread):
         # Create socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP socket
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # No port hold
+
+        self.sock.settimeout(3)
         self.port = port
         self.queue = queue
         self.frame_length = frame_length + 1 # +1 byte for frame number between 0 and 25 (used for synchro) at the beginging
         self.s = None
         self.f = None
         self.buffer = b'' # Buffer's type is bytes
+        self.terminated = False
 
     def run(self):
         """
@@ -43,13 +46,15 @@ class TCPserver(Thread):
 
         self.__connexion()
 
-        while True:
-            while len(self.buffer) < self.frame_length:
+        while not self.terminated:
+            while len(self.buffer) < self.frame_length and not self.terminated:
                 if self.s is None:
                     self.__connexion()
                 try:
                     b = self.s.recv(1024) # Should be a power of 2. Must be under 1944 (two frames). Try 512 ?
                 except socket.error:
+                    continue
+                except socket.timeout:
                     continue
                 # In case of disconnection
                 if len(b) == 0:
@@ -84,4 +89,7 @@ class TCPserver(Thread):
         self.s, self.f = self.sock.accept()
         logging.info("Client TCP connecté")
         self.buffer = b''  # Buffer reset
+
+    def stop(self):
+        self.terminated = True
 
