@@ -35,7 +35,10 @@ def main():
             print('########################### Interrupted #############################')
             sys.exit(0)
 
-    color_server.poweroff()
+    if color_server.shutdown == 1:
+        color_server.poweroff()
+    elif color_server.shutdown == 2:
+        color_server.reboot()
 
 # If main program, start main
 if __name__ == "__main__":

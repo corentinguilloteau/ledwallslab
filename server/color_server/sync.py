@@ -23,7 +23,7 @@ class UDPsync(Thread):
         self.sync_queue = sync_queue
         self.server = server
         self.is_live = True
-        self.terminated = False;
+        self.terminated = False
 
     # Server listening for sync top
     def run(self):
@@ -52,17 +52,19 @@ class UDPsync(Thread):
                 
             elif frame_to_show == 115 and last == 115:  # 115 = 's' --> restart server
                 logging.info("Redémarrage du serveur")
-                self.server.restart_server()
+                self.server.stop_server()
             elif frame_to_show == 114 and last == 114:  # 114 = 'r' --> reboot slab
                 logging.info("Reboot")
-                self.server.reboot()
+                self.server.shutdown = 2
+                self.server.stop_server()
             elif frame_to_show == 108 and last == 108:  # 108 = 'l' --> return live
                 logging.info("Retour au live")
                 self.is_live = True
             elif frame_to_show == 112 and last == 112:  # 112 = 'p' --> shutdown the slab
                 logging.info("Shutdown")
+                self.server.shutdown = 1
                 self.server.stop_server()
             last = frame_to_show
 
     def stop(self):
-        self.terminated= True;
+        self.terminated= True

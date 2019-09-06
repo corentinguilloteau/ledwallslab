@@ -47,7 +47,7 @@ class TCPserver(Thread):
         self.__connexion()
 
         while not self.terminated:
-            while len(self.buffer) < self.frame_length:
+            while len(self.buffer) < self.frame_length and not self.terminated:
                 if self.s is None:
                     self.__connexion()
                 try:
