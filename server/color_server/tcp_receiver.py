@@ -44,12 +44,19 @@ class TCPserver(Thread):
         self.sock.bind(("", self.port))                                        # Listen on port 9999 from everywhere
         self.sock.listen(1)                                                    # 1 client max
 
-        self.__connexion()
-
+        try:
+            self.__connexion()
+        except socket.timeout:
+            self.s=None
+        
         while not self.terminated:
             while len(self.buffer) < self.frame_length and not self.terminated:
                 if self.s is None:
-                    self.__connexion()
+                    try:
+                        self.__connexion()
+                    except socket.timeout:
+                        self.s=None
+                        continue
                 try:
                     b = self.s.recv(1024) # Should be a power of 2. Must be under 1944 (two frames). Try 512 ?
                 except socket.error:
