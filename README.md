@@ -1,6 +1,6 @@
 # README #
 
-Version : 1.0
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/telecom-sound-and-magic/ledwallslab)
 
 ## Utilisation
 
