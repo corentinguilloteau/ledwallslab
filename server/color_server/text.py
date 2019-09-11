@@ -45,7 +45,7 @@ class Text():
         return Text.__img_to_frame(img)
 
     def display_shutdown(self):
-        img = Image.open('poweroff.png')
+        img = Image.open('server/TSM.png')
         return Text.__img_to_frame(img)
 
 
