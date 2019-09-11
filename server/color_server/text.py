@@ -44,4 +44,9 @@ class Text():
         d.text((4, 3), str(self.slab_number), fill=(0, 255, 0))
         return Text.__img_to_frame(img)
 
+    def display_shutdown(self):
+        img = Image.open('server/TSM.png')
+        return Text.__img_to_frame(img)
+
+
 

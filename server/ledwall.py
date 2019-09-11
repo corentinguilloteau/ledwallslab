@@ -27,7 +27,7 @@ def main():
     logging.info("Création du ColorServer")
     color_server = ColorServer(9999, 8888, 10000000) # Data TCP on port 9999 and sync on port 8888 UDP
                                                      # SPI @ 10Mbps
-    while True:
+    while not color_server.shutdown:
         color_server.start_server()
         try:
             color_server.join_server()
@@ -35,6 +35,10 @@ def main():
             print('########################### Interrupted #############################')
             sys.exit(0)
 
+    if color_server.shutdown == 1:
+        color_server.poweroff()
+    elif color_server.shutdown == 2:
+        color_server.reboot()
 
 # If main program, start main
 if __name__ == "__main__":

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jun 16 17:04:13 2016
-
 @author: thibaud
 """
 
 import spidev
 import logging
+from queue import Empty
 from threading import Thread
 import time
 
@@ -35,7 +35,11 @@ class SPIwriter(Thread):
         logging.info("Thread de communication SPI opérationnel")
         # The thread write available data on the SPI bus
         while not self.terminated:
-            frame_to_show = self.sync_queue.get()   # wait until frame number to show UDP received
+            try:
+                frame_to_show = self.sync_queue.get(timeout = 3)   # wait until frame number to show UDP received
+            except Empty:
+                continue
+
             buffer = self.emit_ring_buffer[frame_to_show]
             # spi.xfer only allow 4096 length frames
             while len(buffer) > 4096:

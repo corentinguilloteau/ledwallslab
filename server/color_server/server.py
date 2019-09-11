@@ -27,7 +27,7 @@ class ColorServer():
         self.gamma_matrix = Gamma.gamma_matrix(gamma_coefs)
 
         self.receive_queue = queue.Queue()  # Receive FIFO
-        self.emit_ring_buffer = [bytearray([0, 0, 0, 0])] * 28; # Emit ring buffer (26 regular frames + version frame + number frame)
+        self.emit_ring_buffer = [bytearray([0, 0, 0, 0])] * 29; # Emit ring buffer (26 regular frames + version frame + number frame + shutdown frame)
         self.sync_queue = queue.Queue()  # Top synchro FIFO
 
         # Fill the two text frames (slab number, version, sub version)
@@ -41,20 +41,25 @@ class ColorServer():
         self.text = Text(slab, version, sversion)
         self.emit_ring_buffer[26] = self.text.get_version_frame()
         self.emit_ring_buffer[27] = self.text.get_slab_number_frame()
+        self.emit_ring_buffer[28] = self.text.display_shutdown()
         self.sync_queue.put(27) # Show slab number on start
 
+        self.shutdown = 0
+        self.SPIspeed = SPIspeed
 
+    # Server listening for LED data
+    def start_server(self):
         # New TCP server
         self.tcp_server = TCPserver(self.port, self.frame_length, self.receive_queue)
         # New SPI writer
-        self.spi_writer = SPIwriter(SPIspeed, self.emit_ring_buffer, self.sync_queue)
+        self.spi_writer = SPIwriter(self.SPIspeed, self.emit_ring_buffer, self.sync_queue)
         # Create a translator (decode / encode)
         self.translator = Decoder(self.gamma_matrix, self.receive_queue, self.emit_ring_buffer)
         # Create the top synchro receiver
         self.sync = UDPsync(self.sync_port, self.sync_queue, self)
 
-    # Server listening for LED data
-    def start_server(self):
+        self.shutdown = 0
+
         logging.info("Lancement du ColorServer...")
         self.tcp_server.start()
         self.spi_writer.start()
@@ -62,22 +67,28 @@ class ColorServer():
         self.sync.start()
 
     def join_server(self):
+        logging.info("Attente de la fin des threads")
         self.tcp_server.join()
         self.translator.join()
         self.spi_writer.join()
+       # try:
         self.sync.join()
+        #except RuntimeError:  # Bloquant comme attend la fin de join_serveur pour être join
+         #   pass
 
     def stop_server(self):
-        self.tcp_server._stop()
-        self.translator._stop()
-        self.spi_writer._stop()
-        self.sync._stop()
-
-    def restart_server(self):
-        self.stop_server()
+        logging.info("Arrêt du serveur")
+        self.tcp_server.stop()
+        self.translator.stop()
+        self.spi_writer.stop()
+        self.sync.stop()
 
     @staticmethod
     def reboot():
-        os.system('sudo shutdown -r now')
+        os.system('echo "ledwall"|sudo -S reboot now')
+
+    @staticmethod
+    def poweroff():
+        os.system('echo "ledwall"|sudo -S shutdown now')
 
 
