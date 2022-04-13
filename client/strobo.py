@@ -9,7 +9,7 @@ Created on Thu Jun 16 17:22:21 2016
 import socket
 import time
 
-HOST, PORT = "137.194.67.238", 9999
+HOST, PORT = "127.0.0.1", 9999
 #HOST, PORT = "localhost", 9999
 
 NUMBER_OF_LED = 324

@@ -11,7 +11,7 @@ import os
 from color_server.translator import Decoder
 from color_server.gamma import Gamma
 from color_server.tcp_receiver import TCPserver
-from color_server.spi_writer import SPIwriter
+from color_server.gui_writer import GUIWriter
 from color_server.sync import UDPsync
 from color_server.text import Text
 import queue
@@ -52,7 +52,8 @@ class ColorServer():
         # New TCP server
         self.tcp_server = TCPserver(self.port, self.frame_length, self.receive_queue)
         # New SPI writer
-        self.spi_writer = SPIwriter(self.SPIspeed, self.emit_ring_buffer, self.sync_queue)
+        # TODO: plug ourself here
+        self.spi_writer = GUIWriter(self.emit_ring_buffer, self.sync_queue)
         # Create a translator (decode / encode)
         self.translator = Decoder(self.gamma_matrix, self.receive_queue, self.emit_ring_buffer)
         # Create the top synchro receiver

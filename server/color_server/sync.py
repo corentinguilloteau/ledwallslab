@@ -33,11 +33,12 @@ class UDPsync(Thread):
         last = 0
         while not self.terminated:
             try:
-                frame_to_show, emitter = self.sock.recvfrom(1)
+                frame_to_show, emitter = self.sock.recvfrom(4)
             except socket.timeout:
                 continue
             
-            frame_to_show = int.from_bytes(frame_to_show, byteorder='big')
+            frame_to_show = int.from_bytes(frame_to_show, byteorder='little')
+            print(frame_to_show)
             if 0 <= frame_to_show <= 25 and self.is_live:   # while frame_to_show comes from UDP transmission, errors are possible
                 self.sync_queue.put(frame_to_show)
             elif frame_to_show == 118 and last == 118:  # 118 = 'v' --> show version

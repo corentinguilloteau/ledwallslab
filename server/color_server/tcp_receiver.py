@@ -71,6 +71,8 @@ class TCPserver(Thread):
                 else:
                     self.buffer += b
 
+            print("Receive tcp")
+
             # Write in the reception FIFO only 1 frame
             self.queue.put(self.buffer[:self.frame_length])
             self.buffer = self.buffer[self.frame_length:]
